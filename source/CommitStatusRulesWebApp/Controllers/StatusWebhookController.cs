@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using CommitStatusRulesWebApp.Rules;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Octokit;
-using WebApplication.Rules;
-using CommitStatus = WebApplication.Models.CommitStatus;
+using CommitStatus = CommitStatusRulesWebApp.Models.CommitStatus;
 
-namespace WebApplication.Controllers
+namespace CommitStatusRulesWebApp.Controllers
 {
     public interface IStatusWebhook
     {

@@ -1,12 +1,12 @@
+using CommitStatusRulesWebApp.Rules;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using WebApplication.Rules;
 
-namespace WebApplication
+namespace CommitStatusRulesWebApp
 {
     public class Startup
     {
@@ -23,7 +23,7 @@ namespace WebApplication
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo {Title = "WebApplication", Version = "v1"});
+                c.SwaggerDoc("v1", new OpenApiInfo {Title = "CommitStatusRulesWebApp", Version = "v1"});
             });
 
             services.AddScoped<IStatusCheck, FrontEndChainStatusRuleChecks>();
@@ -37,7 +37,7 @@ namespace WebApplication
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebApplication v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "CommitStatusRulesWebApp v1"));
             }
 
             app.UseMiddleware<AuthTokenMiddleware>();

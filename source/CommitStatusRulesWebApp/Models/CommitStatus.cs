@@ -1,6 +1,4 @@
-﻿using Octokit;
-
-namespace WebApplication.Models
+﻿namespace CommitStatusRulesWebApp.Models
 {
     public class CommitStatus
     {

@@ -2,7 +2,7 @@
 using DotNet.Globbing;
 using Octokit;
 
-namespace WebApplication.Rules
+namespace CommitStatusRulesWebApp.Rules
 {
     public class FrontEndChainStatusRuleChecks : IStatusCheck
     {
@@ -10,8 +10,8 @@ namespace WebApplication.Rules
         
         public bool MatchesRules(IEnumerable<PullRequestFile> files)
         {
-            var newportalFiles = 0;
-            var mdFilesInNewportal = 0;
+            var newPortalFiles = 0;
+            var mdFilesInNewPortal = 0;
             var nonNewPortalFiles = 0;
             
             foreach (var file in files)
@@ -19,13 +19,13 @@ namespace WebApplication.Rules
                 if (Glob.Parse("newportal/**/*").IsMatch(file.FileName))
                 {
                     //good, we're in new portal
-                    newportalFiles++;
+                    newPortalFiles++;
                 }
 
                 if (Glob.Parse("newportal/**/*.md").IsMatch(file.FileName))
                 {
                     //Found a md file, let's record the count
-                    mdFilesInNewportal++;
+                    mdFilesInNewPortal++;
                 }
 
                 if (!Glob.Parse("newportal/**/*").IsMatch(file.FileName))
@@ -34,8 +34,8 @@ namespace WebApplication.Rules
                 }
             }
 
-            if (newportalFiles == 0 && mdFilesInNewportal != 0) return false;
-            if (newportalFiles > 0 && nonNewPortalFiles == 0) return true;
+            if (mdFilesInNewPortal == newPortalFiles) return false;
+            if (newPortalFiles > 0 && nonNewPortalFiles == 0) return true;
 
             return false;
         }
