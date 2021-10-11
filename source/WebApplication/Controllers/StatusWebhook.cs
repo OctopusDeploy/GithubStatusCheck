@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -41,26 +42,30 @@ namespace WebApplication.Controllers
 
             var commitState = GetCommitState(commitStatus);
 
-            if (commitState == CommitState.Success)
+            if (commitState == CommitState.Pending)
             {
-                var rule = _rules.FirstOrDefault(x => x.GetContext() == commitStatus.Context);
-                if (rule != null)
+                var allCurrentStatuses = await github.Repository.Status.GetAll(owner, repo, commitHash);
+                if (!allCurrentStatuses.Select(x => x.Context).Contains(_context))
                 {
-                    var files = await github.PullRequest.Files(owner, repo, 2);
-
-                    if (rule.MatchesRules(files))
-                    {
-                        await github.Repository.Status.Create(owner, repo, commitHash,
-                            new NewCommitStatus {State = CommitState.Success, TargetUrl = commitStatus.Target_Url, Context = _context});
-                    }
+                    await github.Repository.Status.Create(owner, repo, commitHash,
+                        new NewCommitStatus
+                            {State = CommitState.Pending, TargetUrl = commitStatus.Target_Url, Context = _context});
                 }
             }
-
-            var allCurrentStatuses = await github.Repository.Status.GetAll(owner, repo, commitHash);
-            if (!allCurrentStatuses.Select(x => x.Context).Contains(_context))
+            else
             {
-                await github.Repository.Status.Create(owner, repo, commitHash,
-                    new NewCommitStatus {State = CommitState.Pending, TargetUrl = commitStatus.Target_Url, Context = _context});    
+                var rule = _rules.FirstOrDefault(x => x.GetContext() == commitStatus.Context);
+
+                if (rule == null) throw new Exception($"No rule found for context {commitStatus.Context}");
+
+                var files = await github.PullRequest.Files(owner, repo, 2);
+
+                if (rule.MatchesRules(files))
+                {
+                    await github.Repository.Status.Create(owner, repo, commitHash,
+                        new NewCommitStatus
+                            {State = commitState, TargetUrl = commitStatus.Target_Url, Context = _context});
+                }
             }
         }
 
