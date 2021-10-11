@@ -1,4 +1,3 @@
-using Autofac;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -11,20 +10,11 @@ namespace WebApplication
 {
     public class Startup
     {
-        public static IContainer Container { get; private set; }
         private IConfiguration Configuration { get; }
         
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            ConfigureContainer();
-        }
-
-        private void ConfigureContainer()
-        {
-            var builder = new ContainerBuilder();
-            builder.RegisterType<FrontEndChainStatusRuleChecks>().As<IStatusCheck>().SingleInstance();
-            Container = builder.Build();
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -35,6 +25,9 @@ namespace WebApplication
             {
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "WebApplication", Version = "v1"});
             });
+
+            services.AddScoped<IStatusCheck, FrontEndChainStatusRuleChecks>();
+            services.AddScoped<IStatusCheck, FullChainStatusRulesCheck>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

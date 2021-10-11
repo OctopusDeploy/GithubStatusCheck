@@ -24,16 +24,11 @@ namespace WebApplication.Controllers
         private readonly IConfiguration _configuration;
 
         private readonly IEnumerable<IStatusCheck> _rules;
-        
-        public StatusWebhookController(IConfiguration configuration)
-        {
-            _configuration = configuration;
 
-            _rules = new List<IStatusCheck>
-            {
-                new FrontEndChainStatusRuleChecks(), 
-                new FullChainStatusRulesCheck()
-            };
+        public StatusWebhookController(IConfiguration configuration, IEnumerable<IStatusCheck> rules)
+        {
+            _rules = rules;
+            _configuration = configuration;
         }
 
         [HttpPost("{owner}/{repo}/statuses/{commitHash}")]
