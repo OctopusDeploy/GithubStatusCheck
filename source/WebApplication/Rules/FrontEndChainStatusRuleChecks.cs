@@ -6,7 +6,7 @@ namespace WebApplication.Rules
 {
     public class FrontEndChainStatusRuleChecks : IStatusCheck
     {
-        public string GetContext() => "Git Status Test - Frontend Chain (Corey)";
+        public string GetContext() => "Git Status Test - Frontend Chain \\(Corey .*\\)";
         
         public bool MatchesRules(IEnumerable<PullRequestFile> files)
         {
