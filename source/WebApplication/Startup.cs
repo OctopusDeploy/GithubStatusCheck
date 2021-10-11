@@ -47,6 +47,7 @@ namespace WebApplication
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebApplication v1"));
             }
 
+            app.UseMiddleware<AuthTokenMiddleware>();
             app.UseHttpsRedirection();
 
             app.UseRouting();
