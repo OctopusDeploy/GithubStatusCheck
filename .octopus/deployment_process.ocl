@@ -1,0 +1,28 @@
+step "Deploy an Azure App Service" {
+    properties = {
+        Octopus.Action.TargetRoles = "GithubStatusChecksApp"
+    }
+
+    action {
+        action_type = "Octopus.AzureAppService"
+        properties = {
+            Octopus.Action.Azure.DeploymentSlot = "Production"
+            Octopus.Action.Azure.DeploymentType = "Package"
+            Octopus.Action.Package.DownloadOnTentacle = "False"
+            Octopus.Action.Package.FeedId = "Octopus Server (built-in)"
+            Octopus.Action.Package.PackageId = "CommitStatusRulesWebApp"
+            Octopus.Action.RunOnServer = "true"
+            OctopusUseBundledTooling = "False"
+        }
+        worker_pool = "Hosted Ubuntu"
+
+        packages {
+            acquisition_location = "Server"
+            feed = "Octopus Server (built-in)"
+            package_id = "CommitStatusRulesWebApp"
+            properties = {
+                SelectionMode = "immediate"
+            }
+        }
+    }
+}
