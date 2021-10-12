@@ -29,13 +29,13 @@ class Build : NukeBuild
     [NukeOctoVersion] readonly OctoVersionInfo OctoVersionInfo;
 
     AbsolutePath SourceDirectory => RootDirectory / "source";
-    AbsolutePath PublishDirectory => RootDirectory / "publish";
+    AbsolutePath OutputDirectory => RootDirectory / "output";
 
     Target Clean => _ => _
         .Executes(() =>
         {
             SourceDirectory.GlobDirectories("**/bin", "**/obj", "**/TestResults").ForEach(DeleteDirectory);
-            EnsureCleanDirectory(PublishDirectory);
+            EnsureCleanDirectory(OutputDirectory);
         });
 
     Target Restore => _ => _
@@ -75,7 +75,7 @@ class Build : NukeBuild
             DotNetPublish(s => s
                 .SetProject(SourceDirectory / "CommitStatusRulesWebApp")
                 .SetConfiguration(Configuration)
-                .SetOutput(PublishDirectory / "CommitStatusRulesWebApp")
+                .SetOutput(OutputDirectory)
                 .EnableNoRestore()
                 .EnableNoBuild()
                 .SetVersion(OctoVersionInfo.FullSemVer));
