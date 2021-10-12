@@ -1,13 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using CommitStatusRulesWebApp.Models;
 using CommitStatusRulesWebApp.Rules;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using Octokit;
 using CommitStatus = CommitStatusRulesWebApp.Models.CommitStatus;
+using ProductHeaderValue = Octokit.ProductHeaderValue;
 
 namespace CommitStatusRulesWebApp.Controllers
 {
@@ -57,7 +62,8 @@ namespace CommitStatusRulesWebApp.Controllers
 
                 var rule = rules.First();
 
-                var files = await githubClient.PullRequest.Files(owner, repo, 2);
+                var pr = await GetPrForCommitHash(owner, repo, commitHash);
+                var files = await githubClient.PullRequest.Files(owner, repo, pr.Number);
 
                 if (rule.MatchesRules(files))
                 {
@@ -68,9 +74,21 @@ namespace CommitStatusRulesWebApp.Controllers
             }
         }
 
+        private async Task<PullRequest> GetPullRequestForCommitHash(string owner, string repo, string commitHash)
+        {
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("token", _configuration.GetValue<string>("GithubApiToken"));
+
+            var pr = await client.GetAsync($"https://api.github.com/repos/{owner}/{repo}/commits/{commitHash}/pulls");
+
+            return new PullRequest();
+        }
+
         private async Task CreateContextStatusIfNotExisting(string owner, string repo, string commitHash,
             CommitStatus commitStatus, GitHubClient githubClient)
         {
+            //TODO: How do we handle re-runs?
             var allCurrentStatuses = await githubClient.Repository.Status.GetAll(owner, repo, commitHash);
             if (!allCurrentStatuses.Select(x => x.Context).Contains(_context))
             {
@@ -87,6 +105,28 @@ namespace CommitStatusRulesWebApp.Controllers
                 Credentials = new Credentials(_configuration.GetValue<string>("GithubApiToken"))
             };
             return github;
+        }
+
+        private static async Task<PullRequestForCommitHash> GetPrForCommitHash(string owner, string repo, string commitHash)
+        {
+            // We're doing this ourself here instead of using OctoKit since it hasn't been updated in 8 months and the
+            // PR to add the endpoint for getting pull requested from a commit ID isn't in 0.5.0.
+            // https://github.com/octokit/octokit.net/pull/2315
+            //
+            // Can be replaced with:
+            // githubClient.Repository.Commits.Pulls(owner, repo, commitHash) once the next version of OctoKit releases
+            
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Token", "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");
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github.v3+json"));
+            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("OctopusDeployCommitStatusRules", "1.0.0"));
+
+            var response = await client.GetAsync($"https://api.github.com/repos/{owner}/{repo}/commits/{commitHash}/pulls");
+            var message = await response.Content.ReadAsStringAsync();
+            var prs = JsonConvert.DeserializeObject<IEnumerable<PullRequestForCommitHash>>(message);
+
+            return prs?.FirstOrDefault();
         }
 
         private static CommitState GetCommitState(CommitStatus commitStatus)
