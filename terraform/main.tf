@@ -24,8 +24,16 @@ data "azurerm_app_service_plan" "microsites" {
 }
 
 resource "azurerm_resource_group" "github-status-checks" {
-  name = "githubStatusChecks-${var.environment}"
+  name = "GithubStatusChecks-${var.environment}"
   location = data.azurerm_app_service_plan.microsites.location
+  tags = [
+      "teamcity",
+      "github",
+      "GithubStatusChecks",
+      "Engineering Productivity",
+      "#team-engineering-productivity",
+      "mission-critical"
+  ]
 }
 
 resource "azurerm_app_service" "web" {
