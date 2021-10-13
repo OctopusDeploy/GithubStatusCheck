@@ -65,3 +65,25 @@ step "Create Infrastructure" {
         }
     }
 }
+
+step "Create Targets in Octopus" {
+
+    action {
+        action_type = "Octopus.Script"
+        properties = {
+            Octopus.Action.RunOnServer = "true"
+            Octopus.Action.Script.ScriptBody = <<-EOT
+                New-OctopusAzureWebAppTarget -name "Github Status Check - #{Environment}" `
+                                             -azureWebApp "github-status-check-#{Environment | ToLower}" `
+                                             -azureResourceGroupName  $ResourceGroupName `
+                                             -octopusAccountIdOrName $AzureAccount `
+                                             -octopusRoles CrowsNest-Web `
+                							 -octopusDefaultWorkerPoolIdOrName $WorkerPoolForNewTargets `
+                                             -updateIfExisting
+            EOT
+            Octopus.Action.Script.ScriptSource = "Inline"
+            Octopus.Action.Script.Syntax = "PowerShell"
+        }
+        worker_pool = "Hosted Ubuntu"
+    }
+}
