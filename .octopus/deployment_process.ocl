@@ -48,7 +48,7 @@ step "Create Targets in Octopus" {
                                              -azureWebApp "github-status-check-#{Environment | ToLower}" `
                                              -azureResourceGroupName  $ResourceGroupName `
                                              -octopusAccountIdOrName $AzureAccount `
-                                             -octopusRoles CrowsNest-Web `
+                                             -octopusRoles GithubStatusCheck-Web `
                 							 -octopusDefaultWorkerPoolIdOrName $WorkerPoolForNewTargets `
                                              -updateIfExisting
             EOT
@@ -59,29 +59,37 @@ step "Create Targets in Octopus" {
     }
 }
 
-step "Deploy an Azure App Service" {
+step "Deploy Website" {
     properties = {
-        Octopus.Action.TargetRoles = "GithubStatusChecksApp"
+        Octopus.Action.TargetRoles = "GithubStatusCheck-Web"
     }
 
     action {
         action_type = "Octopus.AzureAppService"
         properties = {
-            Octopus.Action.Azure.DeploymentSlot = "Production"
             Octopus.Action.Azure.DeploymentType = "Package"
             Octopus.Action.EnabledFeatures = "Octopus.Features.JsonConfigurationVariables,Octopus.Features.ConfigurationTransforms,Octopus.Features.SubstituteInFiles"
             Octopus.Action.Package.DownloadOnTentacle = "False"
             Octopus.Action.Package.FeedId = "Octopus Server (built-in)"
-            Octopus.Action.Package.PackageId = "CommitStatusRulesWebApp"
+            Octopus.Action.Package.JsonConfigurationVariablesTargets = <<-EOT
+                appsettings.json
+                wwwroot/appsettings.json
+            EOT
+            Octopus.Action.Package.PackageId = "Octopus.GithubStatusCheck"
             Octopus.Action.RunOnServer = "true"
             OctopusUseBundledTooling = "False"
         }
         worker_pool = "Hosted Ubuntu"
 
+        container {
+            feed = "docker.io"
+            image = "octopusdeploy/worker-tools:3.0.0-ubuntu.18.04"
+        }
+
         packages {
             acquisition_location = "Server"
             feed = "Octopus Server (built-in)"
-            package_id = "CommitStatusRulesWebApp"
+            package_id = "Octopus.GithubStatusCheck"
             properties = {
                 SelectionMode = "immediate"
             }
