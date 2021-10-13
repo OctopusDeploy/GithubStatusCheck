@@ -44,11 +44,11 @@ step "Create Targets in Octopus" {
         properties = {
             Octopus.Action.RunOnServer = "true"
             Octopus.Action.Script.ScriptBody = <<-EOT
-                New-OctopusAzureWebAppTarget -name "Github Status Check - #{Environment}" `
-                                             -azureWebApp "github-status-check-#{Environment | ToLower}" `
+                New-OctopusAzureWebAppTarget -name "Github Status Checks - #{Environment}" `
+                                             -azureWebApp "github-status-checks-#{Environment | ToLower}" `
                                              -azureResourceGroupName  $ResourceGroupName `
                                              -octopusAccountIdOrName $AzureAccount `
-                                             -octopusRoles GithubStatusCheck-Web `
+                                             -octopusRoles GithubStatusChecks-Web `
                 							 -octopusDefaultWorkerPoolIdOrName $WorkerPoolForNewTargets `
                                              -updateIfExisting
             EOT
@@ -61,7 +61,7 @@ step "Create Targets in Octopus" {
 
 step "Deploy Website" {
     properties = {
-        Octopus.Action.TargetRoles = "GithubStatusCheck-Web"
+        Octopus.Action.TargetRoles = "GithubStatusChecks-Web"
     }
 
     action {
