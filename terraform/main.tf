@@ -33,6 +33,13 @@ provider "azurerm" {
 resource "azurerm_resource_group" "group" {
   name = "GithubStatusChecks-${var.environment}"
   location = "Australia East"
+  tags = {
+      "WorkloadName" = "TeamcityToGithub",
+      "ApplicationName" = "GithubStatusChecks",
+      "BusinessUnit" = "Engineering Productivity",
+      "Team" = "#team-engineering-productivity",
+      "Criticality" = "mission-critical"
+  }
 }
 
 resource "azurerm_app_service_plan" "plan" {
@@ -46,22 +53,11 @@ resource "azurerm_app_service_plan" "plan" {
   }
 }
 
-resource "azurerm_resource_group" "github-status-checks" {
-  name = "GithubStatusChecks-${var.environment}"
-  location = azurerm_app_service_plan.plan.location
-  tags = {
-      "WorkloadName" = "TeamcityToGithub",
-      "ApplicationName" = "GithubStatusChecks",
-      "BusinessUnit" = "Engineering Productivity",
-      "Team" = "#team-engineering-productivity",
-      "Criticality" = "mission-critical"
-  }
-}
 
 resource "azurerm_app_service" "web" {
   name                = "github-status-checks-${lower(var.environment)}"
-  location            = azurerm_resource_group.github-status-checks.location
-  resource_group_name = azurerm_resource_group.github-status-checks.name
+  location            = azurerm_resource_group.group.location
+  resource_group_name = azurerm_resource_group.group.name
   app_service_plan_id = azurerm_app_service_plan.plan.id
   https_only          = true
 
