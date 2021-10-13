@@ -13,6 +13,9 @@ variable "environment" {
   default = "Development"
 }
 
+variable "app_service_plan" {
+    default = "octopus-engprodapps-development"
+}
 variable "tenant_id" {}
 variable "subscription_id" {}
 variable "client_id" {}
@@ -27,15 +30,20 @@ provider "azurerm" {
   client_secret   = var.client_secret
 }
 
-// Use the shared app service plan
-data "azurerm_app_service_plan" "microsites" {
-  name                = "octopus-microsites-${lower(var.environment)}"
-  resource_group_name = "Microsites-${var.environment}"
+resource "azurerm_app_service_plan" "plan" {
+  name                = var.app_service_plan
+  location            = azurerm_resource_group.group.location
+  resource_group_name = azurerm_resource_group.group.name
+
+  sku {
+    tier = "Basic"
+    size = "B1"
+  }
 }
 
 resource "azurerm_resource_group" "github-status-checks" {
   name = "GithubStatusChecks-${var.environment}"
-  location = data.azurerm_app_service_plan.microsites.location
+  location = azurerm_app_service_plan.plan.location
   tags = {
       "WorkloadName" = "TeamcityToGithub",
       "ApplicationName" = "GithubStatusChecks",
@@ -49,7 +57,7 @@ resource "azurerm_app_service" "web" {
   name                = "github-status-checks-${lower(var.environment)}"
   location            = azurerm_resource_group.github-status-checks.location
   resource_group_name = azurerm_resource_group.github-status-checks.name
-  app_service_plan_id = data.azurerm_app_service_plan.microsites.id
+  app_service_plan_id = azurerm_app_service_plan.plan.id
   https_only          = true
 
   site_config {
