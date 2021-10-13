@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 
-namespace CommitStatusRulesWebApp
+namespace CommitStatusRulesWebApp.Middleware
 {
     public class AuthTokenMiddleware
     {
@@ -20,7 +20,7 @@ namespace CommitStatusRulesWebApp
         {
             if (!context.Request.Headers.TryGetValue("Authorization", out var extractedApiKey))
             {
-                return;
+                throw new Exception("Did not find Authorization Header");
             }
 
             var headerApiKey = extractedApiKey.First();
@@ -30,7 +30,7 @@ namespace CommitStatusRulesWebApp
 
             if (headerApiKey != applicationApiKey)
             {
-                return;
+                throw new Exception("Invalid Authentication Token");
             }
             
             await _next(context);

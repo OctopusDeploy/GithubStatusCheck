@@ -1,4 +1,5 @@
 using System.Reflection;
+using CommitStatusRulesWebApp.Middleware;
 using CommitStatusRulesWebApp.Rules;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -8,6 +9,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Core;
+using Serilog.Core.Enrichers;
+using Serilog.Exceptions;
 
 namespace CommitStatusRulesWebApp
 {
@@ -19,12 +22,16 @@ namespace CommitStatusRulesWebApp
         {
             Configuration = configuration;
 
+            var appName = Assembly.GetAssembly(typeof(Startup))?.FullName;
+
             Log.Logger = new LoggerConfiguration()
+                .Enrich.WithExceptionDetails()
+                .Enrich.With(new PropertyEnricher("Application", appName))
                 .WriteTo.Console()
                 .WriteTo.Seq(Configuration.GetValue<string>("Seq:Url"), apiKey: Configuration.GetValue<string>("Seq:ApiKey"))
                 .CreateLogger();
             
-            Log.Logger.Information($"Started Web App: {Assembly.GetAssembly(typeof(Startup))?.FullName}");
+            Log.Logger.Information($"Started Web App: {appName}");
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -50,6 +57,7 @@ namespace CommitStatusRulesWebApp
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "CommitStatusRulesWebApp v1"));
             }
 
+            app.UseMiddleware<ErrorHandlerMiddleware>();
             app.UseMiddleware<AuthTokenMiddleware>();
             app.UseHttpsRedirection();
 
