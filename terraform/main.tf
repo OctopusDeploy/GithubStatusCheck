@@ -30,6 +30,11 @@ provider "azurerm" {
   client_secret   = var.client_secret
 }
 
+resource "azurerm_resource_group" "group" {
+  name = "GithubStatusChecks-${var.environment}"
+  location = "Australia East"
+}
+
 resource "azurerm_app_service_plan" "plan" {
   name                = var.app_service_plan
   location            = azurerm_resource_group.group.location
