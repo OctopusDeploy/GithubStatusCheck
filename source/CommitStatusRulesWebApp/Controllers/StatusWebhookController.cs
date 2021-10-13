@@ -107,7 +107,7 @@ namespace CommitStatusRulesWebApp.Controllers
             return github;
         }
 
-        private static async Task<PullRequestForCommitHash> GetPrForCommitHash(string owner, string repo, string commitHash)
+        private async Task<PullRequestForCommitHash> GetPrForCommitHash(string owner, string repo, string commitHash)
         {
             // We're doing this ourself here instead of using OctoKit since it hasn't been updated in 8 months and the
             // PR to add the endpoint for getting pull requested from a commit ID isn't in 0.5.0.
@@ -118,7 +118,7 @@ namespace CommitStatusRulesWebApp.Controllers
             
             var client = new HttpClient();
             client.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Token", "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");
+                new AuthenticationHeaderValue("Token", _configuration.GetValue<string>("GithubApiToken"));
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github.v3+json"));
             client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("OctopusDeployCommitStatusRules", "1.0.0"));
 
