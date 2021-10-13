@@ -24,7 +24,7 @@ namespace CommitStatusRulesWebApp.Controllers
     [Route("repos")]
     public class StatusWebhookController : ControllerBase, IStatusWebhook
     {
-        private readonly string _context = "Good to Merge";
+        private readonly string _context = "Build and tests complete";
         
         private readonly IConfiguration _configuration;
 

@@ -1,3 +1,4 @@
+using System.Reflection;
 using CommitStatusRulesWebApp.Rules;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -5,6 +6,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Serilog;
+using Serilog.Core;
 
 namespace CommitStatusRulesWebApp
 {
@@ -15,6 +18,13 @@ namespace CommitStatusRulesWebApp
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.Console()
+                .WriteTo.Seq(Configuration.GetValue<string>("Seq:Url"), apiKey: Configuration.GetValue<string>("Seq:ApiKey"))
+                .CreateLogger();
+            
+            Log.Logger.Information($"Started Web App: {Assembly.GetAssembly(typeof(Startup))?.FullName}");
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
