@@ -66,6 +66,7 @@ step "Deploy Website" {
 
     action {
         action_type = "Octopus.AzureAppService"
+        is_disabled = true
         properties = {
             Octopus.Action.Azure.DeploymentType = "Package"
             Octopus.Action.EnabledFeatures = "Octopus.Features.JsonConfigurationVariables,Octopus.Features.ConfigurationTransforms,Octopus.Features.SubstituteInFiles"
