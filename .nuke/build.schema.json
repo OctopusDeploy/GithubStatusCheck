@@ -76,7 +76,8 @@
               "Default",
               "Publish",
               "Restore",
-              "Test"
+              "Test",
+              "ZipPackages"
             ]
           }
         },
@@ -95,7 +96,8 @@
               "Default",
               "Publish",
               "Restore",
-              "Test"
+              "Test",
+              "ZipPackages"
             ]
           }
         },

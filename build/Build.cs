@@ -29,13 +29,15 @@ class Build : NukeBuild
     [NukeOctoVersion] readonly OctoVersionInfo OctoVersionInfo;
 
     AbsolutePath SourceDirectory => RootDirectory / "source";
-    AbsolutePath OutputDirectory => RootDirectory / "output";
+    AbsolutePath PublishDirectory => RootDirectory / "publish";
+    AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
 
     Target Clean => _ => _
         .Executes(() =>
         {
             SourceDirectory.GlobDirectories("**/bin", "**/obj", "**/TestResults").ForEach(DeleteDirectory);
-            EnsureCleanDirectory(OutputDirectory);
+            EnsureCleanDirectory(PublishDirectory);
+            EnsureCleanDirectory(ArtifactsDirectory);
         });
 
     Target Restore => _ => _
@@ -75,12 +77,24 @@ class Build : NukeBuild
             DotNetPublish(s => s
                 .SetProject(SourceDirectory / "CommitStatusRulesWebApp")
                 .SetConfiguration(Configuration)
-                .SetOutput(OutputDirectory)
+                .SetOutput(PublishDirectory / "Octopus.GithubStatusCheck")
                 .EnableNoRestore()
                 .EnableNoBuild()
                 .SetVersion(OctoVersionInfo.FullSemVer));
         });
 
+    Target ZipPackages => _ => _
+        .DependsOn(Publish)
+        .Executes(() =>
+        {
+            var webAppPackage = ArtifactsDirectory / $"Octopus.GithubStatusCheck.{OctoVersionInfo.FullSemVer}.zip";
+            CompressionTasks.Compress(PublishDirectory / "Octopus.GithubStatusCheck", webAppPackage);
+            
+            var terraformPackage =
+                ArtifactsDirectory / $"Octopus.GithubStatusCheck.Terraform.{OctoVersionInfo.FullSemVer}.zip";
+            CompressionTasks.Compress(RootDirectory / "terraform", terraformPackage);
+        });
+
     Target Default => _ => _
-        .DependsOn(Publish);
+        .DependsOn(ZipPackages);
 }
