@@ -71,10 +71,7 @@ step "Deploy Website" {
             Octopus.Action.EnabledFeatures = "Octopus.Features.JsonConfigurationVariables,Octopus.Features.ConfigurationTransforms,Octopus.Features.SubstituteInFiles"
             Octopus.Action.Package.DownloadOnTentacle = "False"
             Octopus.Action.Package.FeedId = "Octopus Server (built-in)"
-            Octopus.Action.Package.JsonConfigurationVariablesTargets = <<-EOT
-                appsettings.json
-                wwwroot/appsettings.json
-            EOT
+            Octopus.Action.Package.JsonConfigurationVariablesTargets = "appsettings.json"
             Octopus.Action.Package.PackageId = "Octopus.GithubStatusCheck"
             Octopus.Action.RunOnServer = "true"
             OctopusUseBundledTooling = "False"
