@@ -83,4 +83,6 @@ resource "azurerm_app_service_custom_hostname_binding" "web" {
   hostname            = "githubstatuschecks.octopushq.com" 
   app_service_name    = azurerm_app_service.web.name
   resource_group_name = azurerm_app_service.web.resource_group_name
+  ssl_state           = "SniEnabled"
+  thumbprint          = azurerm_app_service_certificate.ssl.thumbprint
 }
