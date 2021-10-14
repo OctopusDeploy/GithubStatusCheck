@@ -22,7 +22,7 @@ namespace CommitStatusRulesWebApp
         {
             Configuration = configuration;
 
-            var appName = Assembly.GetAssembly(typeof(Startup))?.FullName;
+            var appName = Assembly.GetAssembly(typeof(Startup))?.GetName().Name;
 
             Log.Logger = new LoggerConfiguration()
                 .Enrich.WithExceptionDetails()
