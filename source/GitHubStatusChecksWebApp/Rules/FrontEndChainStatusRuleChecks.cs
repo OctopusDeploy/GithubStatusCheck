@@ -6,7 +6,7 @@ namespace GitHubStatusChecksWebApp.Rules
 {
     public class FrontEndChainStatusRuleChecks : IStatusCheck
     {
-        public string GetContext() => "Chain: Full build and test frontend (Frontend)";
+        public string GetContext() => "Chain: Full build and test frontend \\(Frontend\\)";
         
         public bool MatchesRules(IEnumerable<PullRequestFile> files)
         {
