@@ -2,11 +2,11 @@
 using DotNet.Globbing;
 using Octokit;
 
-namespace CommitStatusRulesWebApp.Rules
+namespace GitHubStatusChecksWebApp.Rules
 {
     public class FrontEndChainStatusRuleChecks : IStatusCheck
     {
-        public string GetContext() => "Git Status Test - Frontend Chain \\(Corey .*\\)";
+        public string GetContext() => "Chain: Full build and test frontend \\(Frontend\\)";
         
         public bool MatchesRules(IEnumerable<PullRequestFile> files)
         {

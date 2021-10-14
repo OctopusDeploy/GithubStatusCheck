@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 
-namespace CommitStatusRulesWebApp
+namespace GitHubStatusChecksWebApp.Middleware
 {
     public class AuthTokenMiddleware
     {
@@ -20,7 +20,10 @@ namespace CommitStatusRulesWebApp
         {
             if (!context.Request.Headers.TryGetValue("Authorization", out var extractedApiKey))
             {
-                return;
+                const string error = "No Authorization Header supplied";
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes(error));
+                throw new Exception(error);
             }
 
             var headerApiKey = extractedApiKey.First();
@@ -30,7 +33,10 @@ namespace CommitStatusRulesWebApp
 
             if (headerApiKey != applicationApiKey)
             {
-                return;
+                const string error = "Invalid Authentication Token";
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes(error));
+                throw new Exception(error);
             }
             
             await _next(context);

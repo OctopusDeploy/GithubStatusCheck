@@ -5,16 +5,16 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using CommitStatusRulesWebApp.Models;
-using CommitStatusRulesWebApp.Rules;
+using GitHubStatusChecksWebApp.Models;
+using GitHubStatusChecksWebApp.Rules;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Octokit;
-using CommitStatus = CommitStatusRulesWebApp.Models.CommitStatus;
+using CommitStatus = GitHubStatusChecksWebApp.Models.CommitStatus;
 using ProductHeaderValue = Octokit.ProductHeaderValue;
 
-namespace CommitStatusRulesWebApp.Controllers
+namespace GitHubStatusChecksWebApp.Controllers
 {
     public interface IStatusWebhook
     {
@@ -24,7 +24,7 @@ namespace CommitStatusRulesWebApp.Controllers
     [Route("repos")]
     public class StatusWebhookController : ControllerBase, IStatusWebhook
     {
-        private readonly string _context = "Good to Merge";
+        private readonly string _context = "Build and tests complete";
         
         private readonly IConfiguration _configuration;
 

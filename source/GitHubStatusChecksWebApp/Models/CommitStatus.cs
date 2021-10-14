@@ -1,4 +1,4 @@
-﻿namespace CommitStatusRulesWebApp.Models
+﻿namespace GitHubStatusChecksWebApp.Models
 {
     public class CommitStatus
     {

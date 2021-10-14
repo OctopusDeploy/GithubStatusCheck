@@ -1,10 +1,10 @@
 using System.Linq;
-using CommitStatusRulesWebApp.Rules;
+using GitHubStatusChecksWebApp.Rules;
 using NUnit.Framework;
 using Octokit;
 using Shouldly;
 
-namespace CommitStatusRulesWebApp.Tests
+namespace GitHubStatusChecksWebApp.Tests
 {
     public class FrontEndChainStatusRuleChecksFixture
     {
