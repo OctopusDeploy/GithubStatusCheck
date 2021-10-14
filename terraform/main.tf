@@ -12,7 +12,6 @@ terraform {
 variable "environment" {
   default = "Development"
 }
-
 variable "app_service_plan" {
     default = "octopus-engprodapps-development"
 }
@@ -20,6 +19,12 @@ variable "tenant_id" {}
 variable "subscription_id" {}
 variable "client_id" {}
 variable "client_secret" {}
+variable "pfx_certificate" {
+  description = "the pfx file for the SSL Certificate"
+}
+variable "pfx_password" {
+  description = "the pfx password used to access the public SSL certificate"
+}
 
 provider "azurerm" {
   features {}
@@ -53,7 +58,6 @@ resource "azurerm_app_service_plan" "plan" {
   }
 }
 
-
 resource "azurerm_app_service" "web" {
   name                = "github-status-checks-${lower(var.environment)}"
   location            = azurerm_resource_group.group.location
@@ -64,6 +68,14 @@ resource "azurerm_app_service" "web" {
   site_config {
     dotnet_framework_version = "v5.0"
   }
+}
+
+resource "azurerm_app_service_certificate" "ssl" {
+  name                = "GithubStatusChecks-ssl-${var.environment}"
+  location            = azurerm_resource_group.group.location
+  resource_group_name = azurerm_resource_group.group.name
+  pfx_blob            = var.pfx_certificate
+  password            = var.pfx_password
 }
 
 resource "azurerm_app_service_custom_hostname_binding" "web" {
