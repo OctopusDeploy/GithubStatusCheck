@@ -19,7 +19,7 @@ step "Create Infrastructure" {
             Octopus.Action.Terraform.RunAutomaticFileSubstitution = "True"
             OctopusUseBundledTooling = "False"
         }
-        worker_pool = "Hosted Ubuntu"
+        worker_pool = "Dedicated Worker"
 
         container {
             feed = "docker.io"
