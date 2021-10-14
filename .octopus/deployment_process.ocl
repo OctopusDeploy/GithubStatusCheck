@@ -76,7 +76,7 @@ step "Deploy Website" {
             Octopus.Action.RunOnServer = "true"
             OctopusUseBundledTooling = "False"
         }
-        worker_pool = "Hosted Ubuntu"
+        worker_pool = "Dedicated Worker"
 
         container {
             feed = "docker.io"
