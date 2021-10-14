@@ -20,7 +20,10 @@ namespace CommitStatusRulesWebApp.Middleware
         {
             if (!context.Request.Headers.TryGetValue("Authorization", out var extractedApiKey))
             {
-                throw new Exception("Did not find Authorization Header");
+                const string error = "No Authorization Header supplied";
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes(error));
+                throw new Exception(error);
             }
 
             var headerApiKey = extractedApiKey.First();
@@ -30,7 +33,10 @@ namespace CommitStatusRulesWebApp.Middleware
 
             if (headerApiKey != applicationApiKey)
             {
-                throw new Exception("Invalid Authentication Token");
+                const string error = "Invalid Authentication Token";
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes(error));
+                throw new Exception(error);
             }
             
             await _next(context);
