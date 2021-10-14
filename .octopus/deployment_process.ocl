@@ -8,7 +8,7 @@ step "Create Infrastructure" {
             Octopus.Action.GoogleCloud.UseVMServiceAccount = "True"
             Octopus.Action.Package.DownloadOnTentacle = "False"
             Octopus.Action.Package.FeedId = "Octopus Server (built-in)"
-            Octopus.Action.Package.PackageId = "Octopus.GithubStatusCheck.Terraform"
+            Octopus.Action.Package.PackageId = "Octopus.GithubStatusChecks.Terraform"
             Octopus.Action.RunOnServer = "true"
             Octopus.Action.Script.ScriptSource = "Package"
             Octopus.Action.Terraform.AllowPluginDownloads = "True"
@@ -29,7 +29,7 @@ step "Create Infrastructure" {
         packages {
             acquisition_location = "Server"
             feed = "Octopus Server (built-in)"
-            package_id = "Octopus.GithubStatusCheck.Terraform"
+            package_id = "Octopus.GithubStatusChecks.Terraform"
             properties = {
                 SelectionMode = "immediate"
             }
@@ -72,7 +72,7 @@ step "Deploy Website" {
             Octopus.Action.Package.DownloadOnTentacle = "False"
             Octopus.Action.Package.FeedId = "Octopus Server (built-in)"
             Octopus.Action.Package.JsonConfigurationVariablesTargets = "appsettings.json"
-            Octopus.Action.Package.PackageId = "Octopus.GithubStatusCheck"
+            Octopus.Action.Package.PackageId = "Octopus.GithubStatusChecks.Web"
             Octopus.Action.RunOnServer = "true"
             OctopusUseBundledTooling = "False"
         }
@@ -86,7 +86,7 @@ step "Deploy Website" {
         packages {
             acquisition_location = "Server"
             feed = "Octopus Server (built-in)"
-            package_id = "Octopus.GithubStatusCheck"
+            package_id = "Octopus.GithubStatusChecks.Web"
             properties = {
                 SelectionMode = "immediate"
             }
