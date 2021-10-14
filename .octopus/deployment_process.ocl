@@ -23,7 +23,7 @@ step "Create Infrastructure" {
 
         container {
             feed = "docker.io"
-            image = "octopusdeploy/worker-tools:3.0.0-ubuntu.18.04"
+            image = "octopusdeploy/worker-tools:3.2.0-windows.ltsc2019"
         }
 
         packages {
@@ -80,7 +80,7 @@ step "Deploy Website" {
 
         container {
             feed = "docker.io"
-            image = "octopusdeploy/worker-tools:3.0.0-ubuntu.18.04"
+            image = "octopusdeploy/worker-tools:3.2.0-windows.ltsc2019"
         }
 
         packages {
