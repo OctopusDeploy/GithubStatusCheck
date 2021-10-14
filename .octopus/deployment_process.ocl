@@ -55,7 +55,7 @@ step "Create Targets in Octopus" {
             Octopus.Action.Script.ScriptSource = "Inline"
             Octopus.Action.Script.Syntax = "PowerShell"
         }
-        worker_pool = "Hosted Ubuntu"
+        worker_pool = "Dedicated Worker"
     }
 }
 
