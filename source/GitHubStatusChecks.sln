@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommitStatusRulesWebApp", "CommitStatusRulesWebApp\CommitStatusRulesWebApp.csproj", "{32B2EE02-23BD-4972-8000-413F07DD3B9A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHubStatusChecksWebApp", "GitHubStatusChecksWebApp\GitHubStatusChecksWebApp.csproj", "{32B2EE02-23BD-4972-8000-413F07DD3B9A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommitStatusRulesWebApp.Tests", "CommitStatusRulesWebApp.Tests\CommitStatusRulesWebApp.Tests.csproj", "{1F1F6EB4-19D5-4462-A088-6DAA20BBE318}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHubStatusChecksWebApp.Tests", "GitHubStatusChecksWebApp.Tests\GitHubStatusChecksWebApp.Tests.csproj", "{1F1F6EB4-19D5-4462-A088-6DAA20BBE318}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "..\build\_build.csproj", "{374E2396-1273-44AF-B7A6-34E3260BEBA5}"
 EndProject

@@ -75,9 +75,9 @@ class Build : NukeBuild
         .Executes(() =>
         {
             DotNetPublish(s => s
-                .SetProject(SourceDirectory / "CommitStatusRulesWebApp")
+                .SetProject(SourceDirectory / "GitHubStatusChecksWebApp")
                 .SetConfiguration(Configuration)
-                .SetOutput(PublishDirectory / "Octopus.GithubStatusCheck")
+                .SetOutput(PublishDirectory / "Octopus.GithubStatusChecks")
                 .EnableNoRestore()
                 .EnableNoBuild()
                 .SetVersion(OctoVersionInfo.FullSemVer));
@@ -87,11 +87,11 @@ class Build : NukeBuild
         .DependsOn(Publish)
         .Executes(() =>
         {
-            var webAppPackage = ArtifactsDirectory / $"Octopus.GithubStatusCheck.{OctoVersionInfo.FullSemVer}.zip";
-            CompressionTasks.Compress(PublishDirectory / "Octopus.GithubStatusCheck", webAppPackage);
+            var webAppPackage = ArtifactsDirectory / $"Octopus.GithubStatusChecks.Web.{OctoVersionInfo.FullSemVer}.zip";
+            CompressionTasks.Compress(PublishDirectory / "Octopus.GithubStatusChecks", webAppPackage);
             
             var terraformPackage =
-                ArtifactsDirectory / $"Octopus.GithubStatusCheck.Terraform.{OctoVersionInfo.FullSemVer}.zip";
+                ArtifactsDirectory / $"Octopus.GithubStatusChecks.Terraform.{OctoVersionInfo.FullSemVer}.zip";
             CompressionTasks.Compress(RootDirectory / "terraform", terraformPackage);
         });
 

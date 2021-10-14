@@ -1,6 +1,6 @@
 using System.Reflection;
-using CommitStatusRulesWebApp.Middleware;
-using CommitStatusRulesWebApp.Rules;
+using GitHubStatusChecksWebApp.Middleware;
+using GitHubStatusChecksWebApp.Rules;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -11,7 +11,7 @@ using Serilog;
 using Serilog.Core.Enrichers;
 using Serilog.Exceptions;
 
-namespace CommitStatusRulesWebApp
+namespace GitHubStatusChecksWebApp
 {
     public class Startup
     {
@@ -39,7 +39,7 @@ namespace CommitStatusRulesWebApp
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo {Title = "CommitStatusRulesWebApp", Version = "v1"});
+                c.SwaggerDoc("v1", new OpenApiInfo {Title = "GitHubStatusChecksWebApp", Version = "v1"});
             });
 
             services.AddScoped<IStatusCheck, FrontEndChainStatusRuleChecks>();
@@ -53,7 +53,7 @@ namespace CommitStatusRulesWebApp
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "CommitStatusRulesWebApp v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "GitHubStatusChecksWebApp v1"));
             }
 
             app.UseMiddleware<ErrorHandlerMiddleware>();

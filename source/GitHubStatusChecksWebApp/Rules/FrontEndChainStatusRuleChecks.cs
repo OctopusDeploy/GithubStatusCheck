@@ -2,7 +2,7 @@
 using DotNet.Globbing;
 using Octokit;
 
-namespace CommitStatusRulesWebApp.Rules
+namespace GitHubStatusChecksWebApp.Rules
 {
     public class FrontEndChainStatusRuleChecks : IStatusCheck
     {

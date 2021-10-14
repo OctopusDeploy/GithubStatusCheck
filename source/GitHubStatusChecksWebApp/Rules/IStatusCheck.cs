@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Octokit;
 
-namespace CommitStatusRulesWebApp.Rules
+namespace GitHubStatusChecksWebApp.Rules
 {
     public interface IStatusCheck
     {

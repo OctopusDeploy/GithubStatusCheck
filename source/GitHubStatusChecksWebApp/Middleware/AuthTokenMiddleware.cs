@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 
-namespace CommitStatusRulesWebApp.Middleware
+namespace GitHubStatusChecksWebApp.Middleware
 {
     public class AuthTokenMiddleware
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Octokit;
 
-namespace CommitStatusRulesWebApp.Models
+namespace GitHubStatusChecksWebApp.Models
 {
     public class PullRequestForCommitHash : PullRequest
     {

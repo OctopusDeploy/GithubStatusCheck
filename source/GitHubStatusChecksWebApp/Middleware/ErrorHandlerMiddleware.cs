@@ -3,9 +3,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Serilog;
-using Serilog.Core;
 
-namespace CommitStatusRulesWebApp.Middleware
+namespace GitHubStatusChecksWebApp.Middleware
 {
     public class ErrorHandlerMiddleware
     {
