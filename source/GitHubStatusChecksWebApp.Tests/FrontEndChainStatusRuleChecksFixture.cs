@@ -8,7 +8,6 @@ namespace GitHubStatusChecksWebApp.Tests
 {
     public class FrontEndChainStatusRuleChecksFixture
     {
-        
         [Test]
         [TestCase(new [] {"newportal/jsfile.js", "newportal/readme.md"}, true)]
         [TestCase(new [] {"newportal/someotherfolder/jsfile.js"}, true)]

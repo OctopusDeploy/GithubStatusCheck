@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Octokit;
+using Serilog;
+using Serilog.Core;
 using CommitStatus = GitHubStatusChecksWebApp.Models.CommitStatus;
 using ProductHeaderValue = Octokit.ProductHeaderValue;
 
@@ -49,18 +51,7 @@ namespace GitHubStatusChecksWebApp.Controllers
             }
             else
             {
-                var rules = _rules.Where(x => Regex.IsMatch(commitStatus.Context, x.GetContext())).ToList();
-
-                switch (rules.Count)
-                {
-                    case 0:
-                        throw new Exception($"No rule found for context {commitStatus.Context}");
-                    case > 1:
-                        throw new Exception(
-                            $"Found multiple rules that match the context {commitStatus.Context}: {rules.Select(x => x.GetContext())}");
-                }
-
-                var rule = rules.First();
+                var rule = GetRuleForCommitContext(commitStatus);
 
                 var pr = await GetPrForCommitHash(owner, repo, commitHash);
                 var files = await githubClient.PullRequest.Files(owner, repo, pr.Number);
@@ -74,21 +65,26 @@ namespace GitHubStatusChecksWebApp.Controllers
             }
         }
 
-        private async Task<PullRequest> GetPullRequestForCommitHash(string owner, string repo, string commitHash)
+        public IStatusCheck GetRuleForCommitContext(CommitStatus commitStatus)
         {
-            var client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("token", _configuration.GetValue<string>("GithubApiToken"));
+            var rules = _rules.Where(x => Regex.IsMatch(commitStatus.Context, x.GetContext())).ToList();
 
-            var pr = await client.GetAsync($"https://api.github.com/repos/{owner}/{repo}/commits/{commitHash}/pulls");
+            switch (rules.Count)
+            {
+                case 0:
+                    throw new Exception($"No rule found for context {commitStatus.Context}");
+                case > 1:
+                    throw new Exception(
+                        $"Found multiple rules that match the context {commitStatus.Context}: {rules.Select(x => x.GetContext())}");
+            }
 
-            return new PullRequest();
+            var rule = rules.First();
+            return rule;
         }
 
         private async Task CreateContextStatusIfNotExisting(string owner, string repo, string commitHash,
             CommitStatus commitStatus, GitHubClient githubClient)
         {
-            //TODO: How do we handle re-runs?
             var allCurrentStatuses = await githubClient.Repository.Status.GetAll(owner, repo, commitHash);
             if (!allCurrentStatuses.Select(x => x.Context).Contains(_context))
             {
@@ -122,32 +118,34 @@ namespace GitHubStatusChecksWebApp.Controllers
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github.v3+json"));
             client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("OctopusDeployCommitStatusRules", "1.0.0"));
 
-            var response = await client.GetAsync($"https://api.github.com/repos/{owner}/{repo}/commits/{commitHash}/pulls");
+            var prRequestUrl = $"https://api.github.com/repos/{owner}/{repo}/commits/{commitHash}/pulls";
+            var response = await client.GetAsync(prRequestUrl);
             var message = await response.Content.ReadAsStringAsync();
-            var prs = JsonConvert.DeserializeObject<IEnumerable<PullRequestForCommitHash>>(message);
+            var prs = JsonConvert.DeserializeObject<List<PullRequestForCommitHash>>(message);
 
-            return prs?.FirstOrDefault();
+            if (prs == null)
+            {
+                throw new Exception($"Failed to serialize PRs for request url: {prRequestUrl}");
+            }
+
+            var pr = prs.FirstOrDefault();
+            if (pr == null)
+            {
+                throw new Exception($"No Pull Requests found for request url: {prRequestUrl}");
+            }
+
+            return pr;
         }
 
         private static CommitState GetCommitState(CommitStatus commitStatus)
         {
-            CommitState commitState;
-            switch (commitStatus.State)
+            var commitState = commitStatus.State switch
             {
-                case "pending":
-                    commitState = CommitState.Pending;
-                    break;
-                case "success":
-                    commitState = CommitState.Success;
-                    break;
-                case "failure":
-                    commitState = CommitState.Failure;
-                    break;
-                case "error":
-                default:
-                    commitState = CommitState.Error;
-                    break;
-            }
+                "pending" => CommitState.Pending,
+                "success" => CommitState.Success,
+                "failure" => CommitState.Failure,
+                _ => CommitState.Error
+            };
 
             return commitState;
         }
