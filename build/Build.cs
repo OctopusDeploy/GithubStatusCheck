@@ -66,6 +66,7 @@ class Build : NukeBuild
             DotNetTest(s => s
                 .SetProjectFile(Solution)
                 .SetConfiguration(Configuration)
+                .AddLoggers("teamcity")
                 .EnableNoBuild()
                 .EnableNoRestore());
         });
