@@ -76,7 +76,7 @@ namespace GitHubStatusChecksWebApp.Tests
                 State = "pending"
             });
 
-            output.Message.ShouldContain("Added pending status to PR");
+            output.Message.ShouldStartWith("Added pending status to PR");
         }
 
         [Test]
@@ -97,7 +97,7 @@ namespace GitHubStatusChecksWebApp.Tests
                 State = "pending"
             });
 
-            output.Message.ShouldContain("No matching rules for PR");
+            output.Message.ShouldStartWith("Files do not match rule");
         }
 
         [Test]
@@ -118,7 +118,7 @@ namespace GitHubStatusChecksWebApp.Tests
                 State = "error"
             });
 
-            output.Message.ShouldContain("Added error status to PR");
+            output.Message.ShouldStartWith("Added error status to PR");
         }
         
         [Test]
@@ -139,7 +139,36 @@ namespace GitHubStatusChecksWebApp.Tests
                 State = "success"
             });
 
-            output.Message.ShouldContain("Added success status to PR");
+            output.Message.ShouldStartWith("Added success status to PR");
+        }
+
+        [Test]
+        public async Task FrontendAndFullContextForServerFilesCreatesStatusOnlyForFullContext()
+        {
+            _githubStatusClient.Setup(c => c.GetFilesForPr(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<PullRequestForCommitHash>()))
+                .Returns(Task.FromResult(new List<PullRequestFile>()
+                {
+                    new("", "source/testfile.cs", "", 0, 0, 0, "", "", "", "", ""),
+                } as IReadOnlyList<PullRequestFile>));
+
+            var output = await _controller.Receive("octopusdeploy", "octopusdeploy", "hash", new CommitStatus()
+            {
+                Context = "Chain: Full build and test frontend (Frontend)",
+                State = "success"
+            });
+            
+            output.Message.ShouldStartWith("Files do not match rule");
+            
+            output = await _controller.Receive("octopusdeploy", "octopusdeploy", "hash", new CommitStatus()
+            {
+                Context = "Chain: Full build and test and create release (Octopus Server vNext)",
+                State = "pending"
+            });
+
+            output.Message.ShouldStartWith("Added pending status to PR");
         }
     }
 }

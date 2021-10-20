@@ -43,7 +43,7 @@ namespace GitHubStatusChecksWebApp.Controllers
             var files = await _gitHubStatusClient.GetFilesForPr(owner, repo, pr);
 
             if (!rule.MatchesRules(files))
-                return new StatusWebhookControllerResponse($"No matching rules for PR {pr.Number} and context {commitStatus.Context}");
+                return new StatusWebhookControllerResponse($"Files do not match rule {rule.GetContext()} for PR {pr.Number} and context {commitStatus.Context}");
             
             if (commitState == CommitState.Pending)
             {
