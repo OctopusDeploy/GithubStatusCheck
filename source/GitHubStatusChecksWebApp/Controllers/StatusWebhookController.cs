@@ -21,6 +21,17 @@ namespace GitHubStatusChecksWebApp.Controllers
     public interface IStatusWebhook
     {
     }
+    
+    public class Response
+    {
+        public Response(string message)
+        {
+            Log.Logger.Information(message);
+            Message = message;
+        }
+
+        public string Message { get; }
+    }
 
     [ApiController]
     [Route("repos")]
@@ -39,30 +50,38 @@ namespace GitHubStatusChecksWebApp.Controllers
         }
 
         [HttpPost("{owner}/{repo}/statuses/{commitHash}")]
-        public async Task Receive(string owner, string repo, string commitHash, [FromBody] CommitStatus commitStatus)
+        public async Task<Response> Receive(string owner, string repo, string commitHash, [FromBody] CommitStatus commitStatus)
         {
             var githubClient = CreateGitHubClient();
-
             var commitState = GetCommitState(commitStatus);
+            var rule = GetRuleForCommitContext(commitStatus);
+            var pr = await GetPrForCommitHash(owner, repo, commitHash);
+            var files = await GetFilesForPr(owner, repo, githubClient, pr);
 
+            if (!rule.MatchesRules(files))
+                return new Response($"No matching rules for PR {pr.Number} and context {commitStatus.Context}");
+            
             if (commitState == CommitState.Pending)
             {
-                await CreateContextStatusIfNotExisting(owner, repo, commitHash, commitStatus, githubClient);
+                await AddPendingStatusForContext(owner, repo, commitHash, commitStatus, githubClient);
+                return new Response($"Added pending status to PR {pr.Number} from context {commitStatus.Context}");
             }
-            else
-            {
-                var rule = GetRuleForCommitContext(commitStatus);
 
-                var pr = await GetPrForCommitHash(owner, repo, commitHash);
-                var files = await githubClient.PullRequest.Files(owner, repo, pr.Number);
+            await CreateStatusForCommitStateOnPr(owner, repo, commitHash, commitStatus, githubClient, commitState);
+            return new Response($"Added {commitState} status to PR {pr.Number} for context {commitStatus.Context}");
+        }
 
-                if (rule.MatchesRules(files))
-                {
-                    await githubClient.Repository.Status.Create(owner, repo, commitHash,
-                        new NewCommitStatus
-                            {State = commitState, TargetUrl = commitStatus.Target_Url, Context = _context});
-                }
-            }
+        public virtual async Task CreateStatusForCommitStateOnPr(string owner, string repo, string commitHash,
+            CommitStatus commitStatus, GitHubClient githubClient, CommitState commitState)
+        {
+            await githubClient.Repository.Status.Create(owner, repo, commitHash,
+                new NewCommitStatus
+                    {State = commitState, TargetUrl = commitStatus.Target_Url, Context = _context});
+        }
+
+        public virtual async Task<IReadOnlyList<PullRequestFile>> GetFilesForPr(string owner, string repo, GitHubClient? githubClient, PullRequestForCommitHash? pr)
+        {
+            return await githubClient?.PullRequest.Files(owner, repo, pr.Number);
         }
 
         public IStatusCheck GetRuleForCommitContext(CommitStatus commitStatus)
@@ -82,19 +101,15 @@ namespace GitHubStatusChecksWebApp.Controllers
             return rule;
         }
 
-        private async Task CreateContextStatusIfNotExisting(string owner, string repo, string commitHash,
+        public virtual async Task AddPendingStatusForContext(string owner, string repo, string commitHash,
             CommitStatus commitStatus, GitHubClient githubClient)
         {
-            var allCurrentStatuses = await githubClient.Repository.Status.GetAll(owner, repo, commitHash);
-            if (!allCurrentStatuses.Select(x => x.Context).Contains(_context))
-            {
-                await githubClient.Repository.Status.Create(owner, repo, commitHash,
-                    new NewCommitStatus
-                        {State = CommitState.Pending, TargetUrl = commitStatus.Target_Url, Context = _context});
-            }
+            await githubClient.Repository.Status.Create(owner, repo, commitHash,
+                new NewCommitStatus
+                    {State = CommitState.Pending, TargetUrl = commitStatus.Target_Url, Context = _context});
         }
 
-        private GitHubClient CreateGitHubClient()
+        public virtual GitHubClient CreateGitHubClient()
         {
             var github = new GitHubClient(new ProductHeaderValue("OctopusDeployCommitStatusRules"))
             {
@@ -103,7 +118,7 @@ namespace GitHubStatusChecksWebApp.Controllers
             return github;
         }
 
-        private async Task<PullRequestForCommitHash> GetPrForCommitHash(string owner, string repo, string commitHash)
+        public virtual async Task<PullRequestForCommitHash> GetPrForCommitHash(string owner, string repo, string commitHash)
         {
             // We're doing this ourself here instead of using OctoKit since it hasn't been updated in 8 months and the
             // PR to add the endpoint for getting pull requested from a commit ID isn't in 0.5.0.
@@ -137,7 +152,7 @@ namespace GitHubStatusChecksWebApp.Controllers
             return pr;
         }
 
-        private static CommitState GetCommitState(CommitStatus commitStatus)
+        private CommitState GetCommitState(CommitStatus commitStatus)
         {
             var commitState = commitStatus.State switch
             {
