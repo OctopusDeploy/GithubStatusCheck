@@ -17,11 +17,16 @@ namespace GitHubStatusChecksWebApp.Tests
         [SetUp]
         public void Setup()
         {
+            var githubStatusClient = new Mock<GitHubStatusClient>(new Mock<IConfiguration>().Object);
+            
+            githubStatusClient.Setup(c => c.GetGitHubApiToken())
+                .Returns("token");
+            
             _controller = new StatusWebhookController(new Mock<IConfiguration>().Object, new IStatusCheck []
             {
                 new FullChainStatusRulesCheck(),
                 new FrontEndChainStatusRuleChecks()
-            });
+            }, githubStatusClient.Object);
         }
 
         [Test]
