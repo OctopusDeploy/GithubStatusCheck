@@ -66,7 +66,8 @@ class Build : NukeBuild
             DotNetTest(s => s
                 .SetProjectFile(Solution)
                 .SetConfiguration(Configuration)
-                .AddLoggers("teamcity")
+                .AddLoggers("trx")
+                .SetTestAdapterPath(SourceDirectory / "GitHubStatusChecksWebApp.Tests" / "bin" / Configuration.ToString() / "net5.0")
                 .EnableNoBuild()
                 .EnableNoRestore());
         });
