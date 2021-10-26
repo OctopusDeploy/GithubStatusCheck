@@ -6,6 +6,7 @@ using Shouldly;
 
 namespace GitHubStatusChecksWebApp.Tests
 {
+    [TestFixture]
     public class FrontEndChainStatusRuleChecksFixture
     {
         [Test]

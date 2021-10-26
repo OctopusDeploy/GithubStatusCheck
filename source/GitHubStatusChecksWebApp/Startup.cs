@@ -44,6 +44,7 @@ namespace GitHubStatusChecksWebApp
 
             services.AddScoped<IStatusCheck, FrontEndChainStatusRuleChecks>();
             services.AddScoped<IStatusCheck, FullChainStatusRulesCheck>();
+            services.AddScoped<GitHubStatusClient>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
