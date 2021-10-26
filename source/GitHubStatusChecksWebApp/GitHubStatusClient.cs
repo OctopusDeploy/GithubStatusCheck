@@ -35,15 +35,7 @@ namespace GitHubStatusChecksWebApp
         {
             return _configuration.GetValue<string>("GithubApiToken");
         }
-        
-        public virtual async Task AddPendingStatusForContext(string owner, string repo, string commitHash,
-            CommitStatus commitStatus)
-        {
-            await _gitHubClient.Repository.Status.Create(owner, repo, commitHash,
-                new NewCommitStatus
-                    {State = CommitState.Pending, TargetUrl = commitStatus.Target_Url, Context = Context});
-        }
-        
+
         public virtual async Task CreateStatusForCommitStateOnPr(string owner, string repo, string commitHash,
             CommitStatus commitStatus, CommitState commitState)
         {

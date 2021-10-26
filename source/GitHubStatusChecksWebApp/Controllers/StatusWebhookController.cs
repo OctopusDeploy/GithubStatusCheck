@@ -1,20 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using GitHubStatusChecksWebApp.Models;
-using GitHubStatusChecksWebApp.Responses;
 using GitHubStatusChecksWebApp.Rules;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using Octokit;
-using Serilog.Core;
+using Serilog;
 using CommitStatus = GitHubStatusChecksWebApp.Models.CommitStatus;
-using ProductHeaderValue = Octokit.ProductHeaderValue;
 
 namespace GitHubStatusChecksWebApp.Controllers
 {
@@ -35,7 +28,7 @@ namespace GitHubStatusChecksWebApp.Controllers
         }
 
         [HttpPost("{owner}/{repo}/statuses/{commitHash}")]
-        public async Task<StatusWebhookControllerResponse> Receive(string owner, string repo, string commitHash, [FromBody] CommitStatus commitStatus)
+        public async Task Receive(string owner, string repo, string commitHash, [FromBody] CommitStatus commitStatus)
         {
             var commitState = GitHubStatusClient.GetCommitState(commitStatus);
             var rule = GetRuleForCommitContext(commitStatus);
@@ -43,16 +36,13 @@ namespace GitHubStatusChecksWebApp.Controllers
             var files = await _gitHubStatusClient.GetFilesForPr(owner, repo, pr);
 
             if (!rule.MatchesRules(files))
-                return new StatusWebhookControllerResponse($"Files do not match rule {rule.GetContext()} for PR {pr.Number} and context {commitStatus.Context}");
-            
-            if (commitState == CommitState.Pending)
             {
-                await _gitHubStatusClient.AddPendingStatusForContext(owner, repo, commitHash, commitStatus);
-                return new StatusWebhookControllerResponse($"Added pending status to PR {pr.Number} from context {commitStatus.Context}");
+                Log.Logger.Verbose("Files do not match rule {ruleContext} for PR {pr} and context {context}", rule.GetContext(), pr.Number, commitStatus.Context);
+                return;
             }
 
             await _gitHubStatusClient.CreateStatusForCommitStateOnPr(owner, repo, commitHash, commitStatus, commitState);
-            return new StatusWebhookControllerResponse($"Added {commitState} status to PR {pr.Number} for context {commitStatus.Context}");
+            Log.Logger.Verbose("Added {commitState} status to PR {pr} from context {context}", commitState, pr.Number, commitStatus.Context);
         }
 
         [NonAction]
