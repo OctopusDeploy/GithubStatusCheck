@@ -107,7 +107,7 @@ namespace GitHubStatusChecksWebApp.Tests
         }
 
         [Test]
-        public async Task FrontendAndFullContextForServerFilesCreatesStatusOnlyForFullContext()
+        public async Task FrontendAndFullContextForPortalAndServerFilesCreatesStatusOnlyForFullContext()
         {
             _githubStatusClient.Setup(c => c.GetFilesForPr(
                     It.IsAny<string>(),
@@ -115,6 +115,7 @@ namespace GitHubStatusChecksWebApp.Tests
                     It.IsAny<PullRequestForCommitHash>()))
                 .Returns(Task.FromResult(new List<PullRequestFile>()
                 {
+                    new("", "newportal/testfile.js", "", 0, 0, 0, "", "", "", "", ""),
                     new("", "source/testfile.cs", "", 0, 0, 0, "", "", "", "", ""),
                 } as IReadOnlyList<PullRequestFile>));
 
@@ -132,15 +133,54 @@ namespace GitHubStatusChecksWebApp.Tests
                     It.IsAny<CommitStatus>(), 
                     It.IsAny<CommitState>()), Times.Never);
             
-            //output.Message.ShouldStartWith("Files do not match rule");
-            
             await _controller.Receive("octopusdeploy", "octopusdeploy", "hash", new CommitStatus()
             {
                 Context = "Chain: Full build and test and create release (Octopus Server vNext)",
                 State = "pending"
             });
 
-            // output.Message.ShouldStartWith("Added pending status to PR");
+            _githubStatusClient.Verify(
+                x => x.CreateStatusForCommitStateOnPr(
+                    It.IsAny<string>(), 
+                    It.IsAny<string>(), 
+                    It.IsAny<string>(), 
+                    It.IsAny<CommitStatus>(), 
+                    It.IsAny<CommitState>()), Times.Once);
+        }
+        
+        [Test]
+        public async Task FrontendAndFullContextForServerFilesWhereFullContextComesBeforeFrontendContextOnlyCreatesStatusForFullContext()
+        {
+            _githubStatusClient.Setup(c => c.GetFilesForPr(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<PullRequestForCommitHash>()))
+                .Returns(Task.FromResult(new List<PullRequestFile>()
+                {
+                    new("", "newportal/testfile.js", "", 0, 0, 0, "", "", "", "", ""),
+                    new("", "source/testfile.cs", "", 0, 0, 0, "", "", "", "", ""),
+                } as IReadOnlyList<PullRequestFile>));
+
+            await _controller.Receive("octopusdeploy", "octopusdeploy", "hash", new CommitStatus()
+            {
+                Context = "Chain: Full build and test and create release (Octopus Server vNext)",
+                State = "pending"
+            });
+
+            _githubStatusClient.Verify(
+                x => x.CreateStatusForCommitStateOnPr(
+                    It.IsAny<string>(), 
+                    It.IsAny<string>(), 
+                    It.IsAny<string>(), 
+                    It.IsAny<CommitStatus>(), 
+                    It.IsAny<CommitState>()), Times.Once);
+            
+            await _controller.Receive("octopusdeploy", "octopusdeploy", "hash", new CommitStatus()
+            {
+                Context = "Chain: Full build and test frontend (Frontend)",
+                State = "success"
+            });
+            
             _githubStatusClient.Verify(
                 x => x.CreateStatusForCommitStateOnPr(
                     It.IsAny<string>(), 
