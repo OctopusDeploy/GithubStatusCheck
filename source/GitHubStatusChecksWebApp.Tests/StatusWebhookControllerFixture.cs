@@ -4,11 +4,9 @@ using System.Threading.Tasks;
 using GitHubStatusChecksWebApp.Controllers;
 using GitHubStatusChecksWebApp.Models;
 using GitHubStatusChecksWebApp.Rules;
-using Microsoft.Extensions.Configuration;
 using Moq;
 using NUnit.Framework;
 using Octokit;
-using Shouldly;
 using CommitStatus = GitHubStatusChecksWebApp.Models.CommitStatus;
 
 namespace GitHubStatusChecksWebApp.Tests
@@ -17,15 +15,13 @@ namespace GitHubStatusChecksWebApp.Tests
     public class StatusWebhookControllerFixture
     {
         private StatusWebhookController _controller;
-        private Mock<GitHubStatusClient> _githubStatusClient;
+        private Mock<IGitHubStatusClient> _githubStatusClient;
 
         [SetUp]
         public void Setup()
         {
-            var configuration = new Mock<IConfiguration>().Object;
-            
             //Mock methods that contact GitHub API
-            _githubStatusClient = new Mock<GitHubStatusClient>(configuration);
+            _githubStatusClient = new Mock<IGitHubStatusClient>();
             
             _githubStatusClient.Setup(c => c.GetGitHubApiToken())
                 .Returns("token");
@@ -44,12 +40,9 @@ namespace GitHubStatusChecksWebApp.Tests
                 It.IsAny<string>(),
                 It.IsAny<string>()
             )).Returns(Task.FromResult(new PullRequestForCommitHash(0, "", "", "", "", "", "", "", 1, ItemState.Open, "", "", DateTimeOffset.Now, DateTimeOffset.Now, null, null, new GitReference(), new GitReference(), new User(), new User(), new List<User>(), true, false, MergeableState.Clean, new User(), "", 0, 1, 1, 0, 1, new Milestone(), false, null, new List<User>(), new List<Team>(), new List<Label>())));
-            
-            _controller = new StatusWebhookController(configuration, new IStatusCheck[]
-            {
-                new FullChainStatusRulesCheck(),
-                new FrontEndChainStatusRuleChecks()
-            }, _githubStatusClient.Object);  
+
+            var ruleFinder = RuleFinder.CreateWithKnownRules();
+            _controller = new StatusWebhookController(_githubStatusClient.Object, ruleFinder);  
         }
 
         [Test]

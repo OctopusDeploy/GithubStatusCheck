@@ -14,7 +14,7 @@ using ProductHeaderValue = Octokit.ProductHeaderValue;
 namespace GitHubStatusChecksWebApp
 {
     // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
-    public class GitHubStatusClient
+    public class GitHubStatusClient : IGitHubStatusClient
     {
         private readonly IConfiguration _configuration;
         private const string Context = "Build and tests complete";
@@ -81,19 +81,6 @@ namespace GitHubStatusChecksWebApp
             }
 
             return pr;
-        }
-
-        public static CommitState GetCommitState(CommitStatus commitStatus)
-        {
-            var commitState = commitStatus.State switch
-            {
-                "pending" => CommitState.Pending,
-                "success" => CommitState.Success,
-                "failure" => CommitState.Failure,
-                _ => CommitState.Error
-            };
-
-            return commitState;
         }
     }
 }
