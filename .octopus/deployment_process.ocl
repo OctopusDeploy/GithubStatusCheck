@@ -9,7 +9,6 @@ step "Create Infrastructure" {
             Octopus.Action.Package.DownloadOnTentacle = "False"
             Octopus.Action.Package.FeedId = "Octopus Server (built-in)"
             Octopus.Action.Package.PackageId = "Octopus.GithubStatusChecks.Terraform"
-            Octopus.Action.RunOnServer = "true"
             Octopus.Action.Script.ScriptSource = "Package"
             Octopus.Action.Terraform.AllowPluginDownloads = "True"
             Octopus.Action.Terraform.AzureAccount = "True"
@@ -22,7 +21,7 @@ step "Create Infrastructure" {
         worker_pool = "Hosted Ubuntu"
 
         container {
-            feed = "docker.io"
+            feed = "Docker Hub"
             image = "octopusdeploy/worker-tools:3.2.0-ubuntu.18.04"
         }
 
@@ -42,7 +41,6 @@ step "Create Targets in Octopus" {
     action {
         action_type = "Octopus.Script"
         properties = {
-            Octopus.Action.RunOnServer = "true"
             Octopus.Action.Script.ScriptBody = <<-EOT
                 New-OctopusAzureWebAppTarget -name "Github Status Checks - #{Environment}" `
                                              -azureWebApp "github-status-checks-#{Environment | ToLower}" `
@@ -73,13 +71,12 @@ step "Deploy Website" {
             Octopus.Action.Package.FeedId = "Octopus Server (built-in)"
             Octopus.Action.Package.JsonConfigurationVariablesTargets = "appsettings.json"
             Octopus.Action.Package.PackageId = "Octopus.GithubStatusChecks.Web"
-            Octopus.Action.RunOnServer = "true"
             OctopusUseBundledTooling = "False"
         }
         worker_pool = "Hosted Ubuntu"
 
         container {
-            feed = "docker.io"
+            feed = "Docker Hub"
             image = "octopusdeploy/worker-tools:3.2.0-ubuntu.18.04"
         }
 
