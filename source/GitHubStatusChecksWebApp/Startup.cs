@@ -42,9 +42,8 @@ namespace GitHubStatusChecksWebApp
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "GitHubStatusChecksWebApp", Version = "v1"});
             });
 
-            services.AddScoped<IStatusCheck, FrontEndChainStatusRuleChecks>();
-            services.AddScoped<IStatusCheck, FullChainStatusRulesCheck>();
-            services.AddScoped<GitHubStatusClient>();
+            services.AddScoped<IGitHubStatusClient, GitHubStatusClient>();
+            services.AddScoped<IRuleFinder, RuleFinder>(_ => RuleFinder.CreateWithKnownRules());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
