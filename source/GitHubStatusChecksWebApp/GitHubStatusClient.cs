@@ -63,8 +63,7 @@ namespace GitHubStatusChecksWebApp
             Log.Logger.Information("Querying Github to find PRs for {Owner}/{Repository} for commit {Commit}", owner, repo, commitHash);
 
             var client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Token", _configuration.GetValue<string>("GithubApiToken"));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", _configuration.GetValue<string>("GithubApiToken"));
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github.v3+json"));
             client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("OctopusDeployCommitStatusRules", "1.0.0"));
 
@@ -83,12 +82,13 @@ namespace GitHubStatusChecksWebApp
                     Log.Error(ex, "Failed to deserialize response from GitHub");
                     throw;
                 }
+                if (prs == null)
+                {
+                    throw new Exception($"Failed to serialize PRs for request url: {prRequestUrl}");
+                }
             }
-
-            if (prs == null)
-            {
-                throw new Exception($"Failed to serialize PRs for request url: {prRequestUrl}");
-            }
+            Log.Logger.Information("Github found PRs {PullRequests} in {Owner}/{Repository} for commit {Commit}",
+                prs.Select(x => x.Number), owner, repo, commitHash);
 
             var pr = prs.FirstOrDefault();
             if (pr == null)
