@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using Serilog.Core;
 using Serilog.Core.Enrichers;
 using Serilog.Exceptions;
 
@@ -16,21 +17,25 @@ namespace GitHubStatusChecksWebApp
     public class Startup
     {
         private IConfiguration Configuration { get; }
-        
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
 
             var appName = Assembly.GetAssembly(typeof(Startup))?.GetName().Name;
+            var loggingLevelSwitch = new LoggingLevelSwitch();
 
             Log.Logger = new LoggerConfiguration()
                 .Enrich.WithExceptionDetails()
                 .Enrich.With(new PropertyEnricher("Application", appName))
                 .WriteTo.Console()
-                .WriteTo.Seq(Configuration.GetValue<string>("Seq:Url"), apiKey: Configuration.GetValue<string>("Seq:ApiKey"))
+                .WriteTo.Seq(
+                    serverUrl: Configuration.GetValue<string>("Seq:Url"),
+                    apiKey: Configuration.GetValue<string>("Seq:ApiKey"),
+                    controlLevelSwitch: loggingLevelSwitch)
                 .CreateLogger();
-            
-            Log.Logger.Information($"Started Web App: {appName}");
+
+            Log.Logger.Information("Started Web App: {AppName}", appName);
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.

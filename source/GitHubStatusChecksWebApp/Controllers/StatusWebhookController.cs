@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 using GitHubStatusChecksWebApp.Rules;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using Serilog;
+using Serilog.Context;
 using CommitStatus = GitHubStatusChecksWebApp.Models.CommitStatus;
 
 namespace GitHubStatusChecksWebApp.Controllers
@@ -30,6 +32,12 @@ namespace GitHubStatusChecksWebApp.Controllers
         [HttpPost("{owner}/{repo}/statuses/{commitHash}")]
         public async Task Receive(string owner, string repo, string commitHash, [FromBody] CommitStatus commitStatus)
         {
+            using var prop1 = LogContext.PushProperty("CommitStatusState", commitStatus.State) ;
+            using var prop2 = LogContext.PushProperty("CommitStatusContext", commitStatus.Context) ;
+            using var prop3 = LogContext.PushProperty("CommitStatusTargetUrl", commitStatus.Target_Url) ;
+            using var prop4 = LogContext.PushProperty("CommitStatusDescription", commitStatus.Description) ;
+            Log.Logger.Information("Received post for {Owner}/{Repo} commit {Commit}", owner, repo, commitHash);
+
             var commitState = GitHubStatusClient.GetCommitState(commitStatus);
             var rule = GetRuleForCommitContext(commitStatus);
             var pr = await _gitHubStatusClient.GetPrForCommitHash(owner, repo, commitHash);
@@ -37,12 +45,12 @@ namespace GitHubStatusChecksWebApp.Controllers
 
             if (!rule.MatchesRules(files))
             {
-                Log.Logger.Verbose("Files do not match rule {ruleContext} for PR {pr} and context {context}", rule.GetContext(), pr.Number, commitStatus.Context);
+                Log.Logger.Information("Files do not match rule {RuleContext} for PR {PullRequestNumber}", rule.GetContext(), pr.Number);
                 return;
             }
 
             await _gitHubStatusClient.CreateStatusForCommitStateOnPr(owner, repo, commitHash, commitStatus, commitState);
-            Log.Logger.Verbose("Added {commitState} status to PR {pr} from context {context}", commitState, pr.Number, commitStatus.Context);
+            Log.Logger.Information("Added {CommitState} status to PR {PullRequestNumber}", commitState, pr.Number);
         }
 
         [NonAction]
