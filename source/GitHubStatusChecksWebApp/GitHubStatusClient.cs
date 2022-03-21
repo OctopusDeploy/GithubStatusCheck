@@ -10,6 +10,8 @@ using Newtonsoft.Json;
 using Octokit;
 using CommitStatus = GitHubStatusChecksWebApp.Models.CommitStatus;
 using ProductHeaderValue = Octokit.ProductHeaderValue;
+using Serilog;
+using Serilog.Context;
 
 namespace GitHubStatusChecksWebApp
 {
@@ -20,7 +22,7 @@ namespace GitHubStatusChecksWebApp
         private const string Context = "Build and tests complete";
 
         private readonly GitHubClient _gitHubClient;
-        
+
         public GitHubStatusClient(IConfiguration configuration)
         {
             _configuration = configuration;
@@ -43,12 +45,12 @@ namespace GitHubStatusChecksWebApp
                 new NewCommitStatus
                     {State = commitState, TargetUrl = commitStatus.Target_Url, Context = Context});
         }
-        
+
         public virtual async Task<IReadOnlyList<PullRequestFile>> GetFilesForPr(string owner, string repo, PullRequestForCommitHash? pr)
         {
             return await _gitHubClient.PullRequest.Files(owner, repo, pr.Number);
         }
-        
+
         public virtual async Task<PullRequestForCommitHash> GetPrForCommitHash(string owner, string repo, string commitHash)
         {
             // We're doing this ourself here instead of using OctoKit since it hasn't been updated in 8 months and the
@@ -57,7 +59,9 @@ namespace GitHubStatusChecksWebApp
             //
             // Can be replaced with:
             // githubClient.Repository.Commits.Pulls(owner, repo, commitHash) once the next version of OctoKit releases
-            
+
+            Log.Logger.Information("Querying Github to find PRs for {Owner}/{Repository} for commit {Commit}", owner, repo, commitHash);
+
             var client = new HttpClient();
             client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Token", _configuration.GetValue<string>("GithubApiToken"));
@@ -67,7 +71,19 @@ namespace GitHubStatusChecksWebApp
             var prRequestUrl = $"https://api.github.com/repos/{owner}/{repo}/commits/{commitHash}/pulls";
             var response = await client.GetAsync(prRequestUrl);
             var message = await response.Content.ReadAsStringAsync();
-            var prs = JsonConvert.DeserializeObject<List<PullRequestForCommitHash>>(message);
+            List<PullRequestForCommitHash>? prs = null;
+            using (LogContext.PushProperty("Json", message))
+            {
+                try
+                {
+                    prs = JsonConvert.DeserializeObject<List<PullRequestForCommitHash>>(message);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Failed to deserialize response from GitHub");
+                    throw;
+                }
+            }
 
             if (prs == null)
             {
