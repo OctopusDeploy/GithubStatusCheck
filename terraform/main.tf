@@ -66,7 +66,7 @@ resource "azurerm_app_service" "web" {
   https_only          = true
 
   site_config {
-    dotnet_framework_version = "v5.0"
+    dotnet_framework_version = "v6.0"
   }
 }
 
@@ -80,7 +80,7 @@ resource "azurerm_app_service_certificate" "ssl" {
 
 resource "azurerm_app_service_custom_hostname_binding" "web" {
   count               = var.environment == "Production" ? 1 : 0
-  hostname            = "githubstatuschecks.octopushq.com" 
+  hostname            = "githubstatuschecks.octopushq.com"
   app_service_name    = azurerm_app_service.web.name
   resource_group_name = azurerm_app_service.web.resource_group_name
   ssl_state           = "SniEnabled"
