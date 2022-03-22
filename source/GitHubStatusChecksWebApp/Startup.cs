@@ -28,6 +28,7 @@ namespace GitHubStatusChecksWebApp
             Log.Logger = new LoggerConfiguration()
                 .Enrich.WithExceptionDetails()
                 .Enrich.With(new PropertyEnricher("Application", appName))
+                .Enrich.FromLogContext()
                 .WriteTo.Console()
                 .WriteTo.Seq(
                     serverUrl: Configuration.GetValue<string>("Seq:Url"),
