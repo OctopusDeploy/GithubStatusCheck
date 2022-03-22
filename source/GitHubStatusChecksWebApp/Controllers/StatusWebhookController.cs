@@ -32,25 +32,33 @@ namespace GitHubStatusChecksWebApp.Controllers
         [HttpPost("{owner}/{repo}/statuses/{commitHash}")]
         public async Task Receive(string owner, string repo, string commitHash, [FromBody] CommitStatus commitStatus)
         {
-            using var prop1 = LogContext.PushProperty("CommitStatusState", commitStatus.State) ;
-            using var prop2 = LogContext.PushProperty("CommitStatusContext", commitStatus.Context) ;
-            using var prop3 = LogContext.PushProperty("CommitStatusTargetUrl", commitStatus.Target_Url) ;
-            using var prop4 = LogContext.PushProperty("CommitStatusDescription", commitStatus.Description) ;
-            Log.Logger.Information("Received post for {Owner}/{Repo} commit {Commit}", owner, repo, commitHash);
+            using (LogContext.PushProperty("CommitStatusState", commitStatus.State))
+            using (LogContext.PushProperty("CommitStatusContext", commitStatus.Context))
+            using (LogContext.PushProperty("CommitStatusTargetUrl", commitStatus.Target_Url))
+            using (LogContext.PushProperty("CommitStatusDescription", commitStatus.Description))
+                Log.Logger.Information("Received post for {Owner}/{Repo} commit {Commit}", owner, repo, commitHash);
 
             var commitState = GitHubStatusClient.GetCommitState(commitStatus);
             var rule = GetRuleForCommitContext(commitStatus);
             var pr = await _gitHubStatusClient.GetPrForCommitHash(owner, repo, commitHash);
             var files = await _gitHubStatusClient.GetFilesForPr(owner, repo, pr);
 
-            if (!rule.MatchesRules(files))
+            using (LogContext.PushProperty("Files", files.Select(x => x.FileName)))
             {
-                Log.Logger.Information("Files do not match rule {RuleContext} for PR {PullRequestNumber}", rule.GetContext(), pr.Number);
-                return;
+                Log.Logger.Information("Using rule {Rule} for PR {PullRequestNumber}", rule.GetType().Name, pr.Number);
+                if (rule.MatchesRules(files))
+                {
+                    Log.Logger.Information("Files match rule {Rule} for PR {PullRequestNumber}", rule.GetType().Name, pr.Number);
+                }
+                else
+                {
+                    Log.Logger.Information("Files do not match rule {Rule} for PR {PullRequestNumber}", rule.GetType().Name, pr.Number);
+                    return;
+                }
             }
 
             await _gitHubStatusClient.CreateStatusForCommitStateOnPr(owner, repo, commitHash, commitStatus, commitState);
-            Log.Logger.Information("Added {CommitState} status to PR {PullRequestNumber}", commitState, pr.Number);
+            Log.Logger.Information("Setting status to {CommitState} for PR {PullRequestNumber}", commitState, pr.Number);
         }
 
         [NonAction]
