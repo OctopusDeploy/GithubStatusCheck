@@ -22,15 +22,15 @@ class Build : NukeBuild
 
     [Solution] readonly Solution Solution;
 
-    [Parameter("Whether to auto-detect the branch name - this is okay for a local build, but should not be used under CI.")] 
+    [Parameter("Whether to auto-detect the branch name - this is okay for a local build, but should not be used under CI.")]
     readonly bool AutoDetectBranch = IsLocalBuild;
-    
+
     [Parameter("Branch name for OctoVersion to use to calculate the version number. Can be set via the environment variable " + CiBranchNameEnvVariable + ".", Name = CiBranchNameEnvVariable)]
     string BranchName { get; set; }
 
-    [OctoVersion(BranchParameter = nameof(BranchName), AutoDetectBranchParameter = nameof(AutoDetectBranch))] 
+    [OctoVersion(BranchParameter = nameof(BranchName), AutoDetectBranchParameter = nameof(AutoDetectBranch), Framework = "net6.0")]
     public OctoVersionInfo OctoVersionInfo;
-    
+
     AbsolutePath SourceDirectory => RootDirectory / "source";
     AbsolutePath PublishDirectory => RootDirectory / "publish";
     AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
@@ -94,7 +94,7 @@ class Build : NukeBuild
         {
             var webAppPackage = ArtifactsDirectory / $"Octopus.GithubStatusChecks.Web.{OctoVersionInfo.FullSemVer}.zip";
             CompressionTasks.Compress(PublishDirectory / "Octopus.GithubStatusChecks", webAppPackage);
-            
+
             var terraformPackage =
                 ArtifactsDirectory / $"Octopus.GithubStatusChecks.Terraform.{OctoVersionInfo.FullSemVer}.zip";
             CompressionTasks.Compress(RootDirectory / "terraform", terraformPackage);
