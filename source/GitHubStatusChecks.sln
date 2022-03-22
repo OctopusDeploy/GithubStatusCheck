@@ -6,6 +6,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHubStatusChecksWebApp.Te
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "..\build\_build.csproj", "{374E2396-1273-44AF-B7A6-34E3260BEBA5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "terraform", "terraform", "{F370CDE8-C6A2-41D5-9ACC-1D2BFCE5F70A}"
+	ProjectSection(SolutionItems) = preProject
+		..\terraform\main.tf = ..\terraform\main.tf
+		..\terraform\octopus.auto.tfvars = ..\terraform\octopus.auto.tfvars
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

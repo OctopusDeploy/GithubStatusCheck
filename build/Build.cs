@@ -70,7 +70,7 @@ class Build : NukeBuild
                 .SetProjectFile(Solution)
                 .SetConfiguration(Configuration)
                 .AddLoggers("trx")
-                .SetTestAdapterPath(SourceDirectory / "GitHubStatusChecksWebApp.Tests" / "bin" / Configuration.ToString() / "net5.0")
+                .SetTestAdapterPath(SourceDirectory / "GitHubStatusChecksWebApp.Tests" / "bin" / Configuration.ToString() / "net6.0")
                 .EnableNoBuild()
                 .EnableNoRestore());
         });
