@@ -7,7 +7,7 @@ namespace GitHubStatusChecksWebApp.Rules;
 
 public class DocumentationChainStatusRuleChecks : IStatusCheck
 {
-    public string GetContext() => "Chain: Documentation";
+    public string GetContext() => "Chain: Documentation \\(Octopus Server .*\\)";
         
     public bool MatchesRules(IEnumerable<PullRequestFile> files)
     {
