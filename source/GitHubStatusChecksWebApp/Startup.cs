@@ -48,6 +48,7 @@ namespace GitHubStatusChecksWebApp
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "GitHubStatusChecksWebApp", Version = "v1"});
             });
 
+            services.AddScoped<IStatusCheck, DocumentationChainStatusRuleChecks>();
             services.AddScoped<IStatusCheck, FrontEndChainStatusRuleChecks>();
             services.AddScoped<IStatusCheck, FullChainStatusRulesCheck>();
             services.AddScoped<GitHubStatusClient>();
