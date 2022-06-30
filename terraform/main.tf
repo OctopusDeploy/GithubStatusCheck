@@ -59,7 +59,7 @@ resource "azurerm_windows_web_app" "web" {
   name                = "github-status-checks-${lower(var.environment)}-core-platform"
   location            = azurerm_service_plan.plan.location
   resource_group_name = azurerm_resource_group.group.name
-  app_service_plan_id = azurerm_service_plan.plan.id
+  service_plan_id     = azurerm_service_plan.plan.id
   https_only          = true
 
   site_config {
