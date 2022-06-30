@@ -23,7 +23,7 @@ step "Create Infrastructure" {
 
         container {
             feed = "Docker Hub"
-            image = "octopusdeploy/worker-tools:3.2.0-ubuntu.18.04"
+            image = "octopusdeploy/worker-tools:3.3.2-ubuntu.18.04"
         }
 
         packages {
