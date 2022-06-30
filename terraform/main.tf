@@ -47,22 +47,19 @@ resource "azurerm_resource_group" "group" {
   }
 }
 
-resource "azurerm_app_service_plan" "plan" {
+resource "azurerm_service_plan" "plan" {
   name                = var.app_service_plan
   location            = azurerm_resource_group.group.location
   resource_group_name = azurerm_resource_group.group.name
-
-  sku {
-    tier = "Basic"
-    size = "B1"
-  }
+  os_type             = "Windows"
+  sku_name            = "B1"
 }
 
-resource "azurerm_app_service" "web" {
-  name                = "github-status-checks-${lower(var.environment)}"
-  location            = azurerm_resource_group.group.location
+resource "azurerm_windows_web_app" "web" {
+  name                = "github-status-checks-${lower(var.environment)}-core-platform"
+  location            = azurerm_service_plan.plan.location
   resource_group_name = azurerm_resource_group.group.name
-  app_service_plan_id = azurerm_app_service_plan.plan.id
+  service_plan_id     = azurerm_service_plan.plan.id
   https_only          = true
 
   site_config {
