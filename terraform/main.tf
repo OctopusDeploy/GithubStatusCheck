@@ -62,12 +62,12 @@ resource "azurerm_windows_web_app" "web" {
   service_plan_id     = azurerm_service_plan.plan.id
   https_only          = true
 
-  application_stack {
-    current_stack = "dotnet"
-    dotnet_version = "v6.0"
+  site_config {
+    application_stack {
+      current_stack = "dotnet"
+      dotnet_version = "v6.0"
+    }
   }
-
-  site_config {}
 }
 
 resource "azurerm_app_service_certificate" "ssl" {
