@@ -13,7 +13,7 @@ variable "environment" {
   default = "Development"
 }
 variable "app_service_plan" {
-    default = "octopus-engprodapps-development"
+    default = "octopus-coreplatformapps-development"
 }
 variable "tenant_id" {}
 variable "subscription_id" {}
@@ -36,13 +36,13 @@ provider "azurerm" {
 }
 
 resource "azurerm_resource_group" "group" {
-  name = "GithubStatusChecks-${var.environment}"
+  name = "#{ResourceGroupName}"
   location = "Australia East"
   tags = {
       "WorkloadName" = "TeamcityToGithub",
       "ApplicationName" = "GithubStatusChecks",
-      "BusinessUnit" = "Engineering Productivity",
-      "Team" = "#team-engineering-productivity",
+      "BusinessUnit" = "Core Platform",
+      "Team" = "#team-core-platform",
       "Criticality" = "mission-critical"
   }
 }
