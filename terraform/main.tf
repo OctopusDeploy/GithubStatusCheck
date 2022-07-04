@@ -115,4 +115,14 @@ resource "azurerm_app_service_custom_hostname_binding" "web_app_binding" {
     dnsimple_zone_record.verify_entry,
     dnsimple_zone_record.domain_entry
   ]
+
+  lifecycle {
+    ignore_changes = [ssl_state, thumbprint]
+  }
+}
+
+resource "azurerm_app_service_certificate_binding" "cert_binding" {
+  hostname_binding_id = azurerm_app_service_custom_hostname_binding.web_app_binding.id
+  certificate_id      = azurerm_app_service_certificate.ssl.id
+  ssl_state           = "SniEnabled"
 }
