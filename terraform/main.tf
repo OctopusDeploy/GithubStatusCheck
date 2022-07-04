@@ -79,7 +79,7 @@ resource "azurerm_app_service_certificate" "ssl" {
 }
 
 resource "azurerm_app_service_custom_hostname_binding" "web_app_binding" {
-  hostname            = "githubstatuschecks.octopushq.com"
+  hostname            = "githubstatuschecks-coreplatform.octopushq.com"
   app_service_name    = azurerm_windows_web_app.web.name
   resource_group_name = azurerm_resource_group.group.name
 }
