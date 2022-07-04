@@ -7,6 +7,12 @@ terraform {
       name = "#{TerraformWorkspace}"
     }
   }
+
+  required_providers {
+    dnsimple = {
+      source = "dnsimple/dnsimple"
+    }
+  }
 }
 
 variable "environment" {
@@ -25,6 +31,9 @@ variable "pfx_certificate" {
 variable "pfx_password" {
   description = "the pfx password used to access the public SSL certificate"
 }
+variable "resource_group_name" {}
+variable "dnsimple_token" {}
+variable "dnsimple_account" {}
 
 provider "azurerm" {
   features {}
@@ -35,8 +44,13 @@ provider "azurerm" {
   client_secret   = var.client_secret
 }
 
+provider "dnsimple" {
+  token   = var.dnsimple_token
+  account = var.dnsimple_account
+}
+
 resource "azurerm_resource_group" "group" {
-  name = "#{ResourceGroupName}"
+  name = var.resource_group_name
   location = "Australia East"
   tags = {
       "WorkloadName" = "TeamcityToGithub",
@@ -78,8 +92,32 @@ resource "azurerm_app_service_certificate" "ssl" {
   password            = var.pfx_password
 }
 
+data "azurerm_web_app" "web" {
+  name                = azurerm_windows_web_app.web.name
+  resource_group_name = azurerm_resource_group.group.name
+}
+
+resource "dnsimple_zone_record" "verify_entry" {
+  zone_name = "octopushq.com"
+  name      = "asuid.githubstatuschecks-coreplatform"
+  type      = "TXT"
+  value     = data.azurerm_web_app.web.custom_domain_verification_id
+}
+
+resource "dnsimple_zone_record" "domain_entry" {
+  zone_name = "octopushq.com"
+  name      = "githubstatuschecks-coreplatform"
+  type      = "CNAME"
+  value     = data.azurerm_web_app.web.default_hostname
+}
+
 resource "azurerm_app_service_custom_hostname_binding" "web_app_binding" {
   hostname            = "githubstatuschecks-coreplatform.octopushq.com"
   app_service_name    = azurerm_windows_web_app.web.name
   resource_group_name = azurerm_resource_group.group.name
+
+  depends_on = [
+    dnsimple_zone_record.verify_entry,
+    dnsimple_zone_record.domain_entry
+  ]
 }
