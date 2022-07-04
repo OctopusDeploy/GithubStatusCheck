@@ -78,11 +78,8 @@ resource "azurerm_app_service_certificate" "ssl" {
   password            = var.pfx_password
 }
 
-resource "azurerm_app_service_custom_hostname_binding" "web" {
-  count               = var.environment == "Production" ? 1 : 0
+resource "azurerm_app_service_custom_hostname_binding" "web_app_binding" {
   hostname            = "githubstatuschecks.octopushq.com"
   app_service_name    = azurerm_windows_web_app.web.name
-  resource_group_name = azurerm_windows_web_app.web.resource_group_name
-  ssl_state           = "SniEnabled"
-  thumbprint          = azurerm_app_service_certificate.ssl.thumbprint
+  resource_group_name = azurerm_resource_group.group.name
 }
