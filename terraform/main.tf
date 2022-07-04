@@ -92,23 +92,18 @@ resource "azurerm_app_service_certificate" "ssl" {
   password            = var.pfx_password
 }
 
-data "azurerm_web_app" "web" {
-  name                = azurerm_windows_web_app.web.name
-  resource_group_name = azurerm_resource_group.group.name
-}
-
 resource "dnsimple_zone_record" "verify_entry" {
   zone_name = "octopushq.com"
   name      = "asuid.githubstatuschecks-coreplatform"
   type      = "TXT"
-  value     = data.azurerm_web_app.web.custom_domain_verification_id
+  value     = azurerm_windows_web_app.web.custom_domain_verification_id
 }
 
 resource "dnsimple_zone_record" "domain_entry" {
   zone_name = "octopushq.com"
   name      = "githubstatuschecks-coreplatform"
   type      = "CNAME"
-  value     = data.azurerm_web_app.web.default_hostname
+  value     = azurerm_windows_web_app.web.default_hostname
 }
 
 resource "azurerm_app_service_custom_hostname_binding" "web_app_binding" {
