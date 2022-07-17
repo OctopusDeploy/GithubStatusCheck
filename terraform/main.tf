@@ -94,20 +94,20 @@ resource "azurerm_app_service_certificate" "ssl" {
 
 resource "dnsimple_zone_record" "verify_entry" {
   zone_name = "octopushq.com"
-  name      = "asuid.githubstatuschecks-coreplatform"
+  name      = "asuid.githubstatuschecks"
   type      = "TXT"
   value     = azurerm_windows_web_app.web.custom_domain_verification_id
 }
 
 resource "dnsimple_zone_record" "domain_entry" {
   zone_name = "octopushq.com"
-  name      = "githubstatuschecks-coreplatform"
+  name      = "githubstatuschecks"
   type      = "CNAME"
   value     = azurerm_windows_web_app.web.default_hostname
 }
 
 resource "azurerm_app_service_custom_hostname_binding" "web_app_binding" {
-  hostname            = "githubstatuschecks-coreplatform.octopushq.com"
+  hostname            = "githubstatuschecks.octopushq.com"
   app_service_name    = azurerm_windows_web_app.web.name
   resource_group_name = azurerm_resource_group.group.name
 
